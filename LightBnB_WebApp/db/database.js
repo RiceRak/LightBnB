@@ -22,7 +22,7 @@ const getUserWithEmail = function (email) {
   .query(
     `SELECT *
     FROM users
-    WHERE email = $1`,
+    WHERE email = $1;`,
     [email.toLowerCase()]
   )
   .then((result) => {
@@ -45,7 +45,7 @@ const getUserWithId = function (id) {
   .query(
     `SELECT *
     FROM users
-    WHERE id = $1`,
+    WHERE id = $1;`,
     [id]
   )
   .then((result) => {
@@ -68,7 +68,7 @@ const addUser = function (user) {
   .query(
     `INSERT INTO users (name, password, email) 
     VALUES ($1, $2, $3) 
-    RETURNING *`,
+    RETURNING *;`,
     [user.name, user.password, user.email]
   )
   .then((result) => {
@@ -89,7 +89,26 @@ const addUser = function (user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool
+    .query(
+      `SELECT reservations.id, properties.thumbnail_photo_url, properties.title, properties.cost_per_night, reservations.start_date, avg(rating) as average_rating
+      FROM reservations
+      JOIN properties ON reservations.property_id = properties.id
+      JOIN property_reviews ON properties.id = property_reviews.property_id
+      WHERE reservations.guest_id = $1
+      GROUP BY properties.id, reservations.id
+      ORDER BY reservations.start_date
+      LIMIT $2;
+    `, [guest_id, limit]
+    )
+    .then((result) => {
+      console.log('reservations', result)
+      return result.rows;
+    })
+    .catch((error) => {
+      console.error('Error retrieving reservations:', error.message);
+      throw error; 
+    });
 };
 
 /// Properties
