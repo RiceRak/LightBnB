@@ -120,6 +120,7 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit = 10) {
+  return new Promise((resolve, reject) => {
  // set variables
   const queryParams = [];
   
@@ -156,6 +157,28 @@ if (options.minimum_price_per_night && options.maximum_price_per_night) {
   queryParams.push(options.maximum_price_per_night * 100);
   queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} cost_per_night <= $${queryParams.length} `;
 }
+
+// fliter by rating
+if (options.minimum_rating) {
+  queryParams.push(options.minimum_rating);
+  queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} property_reviews.rating >= $${queryParams.length} `;
+}
+
+    // Add LIMIT
+    queryParams.push(limit);
+    queryString += `
+      GROUP BY properties.id
+      ORDER BY cost_per_night
+      LIMIT $${queryParams.length};
+    `;
+
+    console.log(queryString, queryParams);
+
+    pool.query(queryString, queryParams)
+      .then((res) => resolve(res.rows))
+      .catch((err) => reject(err));
+  });
+
 };
 
 /**
