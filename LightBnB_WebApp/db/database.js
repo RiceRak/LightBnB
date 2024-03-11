@@ -141,6 +141,21 @@ if (options.city) {
   queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} city LIKE $${queryParams.length} `;
 }
   
+// filter by price
+if (options.minimum_price_per_night && options.maximum_price_per_night) {
+  // if both minimum and maximum price are provided
+  queryParams.push(options.minimum_price_per_night * 100);
+  queryParams.push(options.maximum_price_per_night * 100);
+  queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} cost_per_night >= $${queryParams.length - 1} AND cost_per_night <= $${queryParams.length} `;
+} else if (options.minimum_price_per_night) {
+  // if only minimum price is provided
+  queryParams.push(options.minimum_price_per_night * 100);
+  queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} cost_per_night >= $${queryParams.length} `;
+} else if (options.maximum_price_per_night) {
+  // if only maximum price is provided
+  queryParams.push(options.maximum_price_per_night * 100);
+  queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} cost_per_night <= $${queryParams.length} `;
+}
 };
 
 /**
