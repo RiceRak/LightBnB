@@ -128,6 +128,12 @@ const getAllProperties = function (options, limit = 10) {
   FROM properties
   LEFT JOIN property_reviews ON properties.id = property_id
 `;
+
+// filter by owner ID
+if (options.owner_id) {
+  queryParams.push(options.owner_id);
+  queryString += `WHERE owner_id = $${queryParams.length} `;
+}
   
 };
 
