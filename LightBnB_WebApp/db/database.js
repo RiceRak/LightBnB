@@ -134,6 +134,12 @@ if (options.owner_id) {
   queryParams.push(options.owner_id);
   queryString += `WHERE owner_id = $${queryParams.length} `;
 }
+
+// filter by city
+if (options.city) {
+  queryParams.push(`%${options.city}%`);
+  queryString += `${queryParams.length > 1 ? 'AND' : 'WHERE'} city LIKE $${queryParams.length} `;
+}
   
 };
 
